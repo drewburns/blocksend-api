@@ -1,0 +1,11 @@
+org: andrewburns
+app: blockreward
+component: express
+name: block-prod
+
+inputs:
+  src: ./
+  env:                           # (optional) env vars.
+    DEBUG: 'express:*'           #            this express specific env var will print express debug logs.
+    NODE_ENV: "production"
+    JWT_KEY: "INKh96PCfUHpI44qYzez2iQTjP1s3A"
