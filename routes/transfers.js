@@ -29,7 +29,7 @@ function generate(n) {
 }
 
 router.post("/create", async function (req, res, next) {
-  const { amount, tok, email, senderName } = req.body;
+  const { amount, paymentId, email, senderName } = req.body;
   console.log("user: ", req.user);
   var user = null;
   const foundUser = await User.findOne({ where: { email } });
@@ -39,12 +39,11 @@ router.post("/create", async function (req, res, next) {
     user = foundUser;
   }
 
-  const stripePaymentId = "blahblah";
   const newTransfer = await Transfer.create({
     userId: user.id,
     amount,
     senderName,
-    paymentId: stripePaymentId,
+    paymentId: paymentId || "",
     link: guidGenerator(),
   });
   res.json(newTransfer);
