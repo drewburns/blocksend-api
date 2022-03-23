@@ -4,6 +4,7 @@
   "description": "",
   "main": "app.js",
   "dependencies": {
+    "@sendgrid/mail": "^7.6.2",
     "axios": "^0.26.1",
     "bcrypt-nodejs": "0.0.3",
     "braintree": "^3.10.0",

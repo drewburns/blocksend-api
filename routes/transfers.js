@@ -28,6 +28,23 @@ function generate(n) {
   return ("" + number).substring(add);
 }
 
+const sendEmail = async (
+  email,
+  code,
+  subject = "Your login code for BlockSend",
+  text = `Your login code is ${code}`
+) => {
+  const sgMail = require("@sendgrid/mail");
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  const msg = {
+    to: email, // Change to your recipient
+    from: "andrew@getzendent.com", // Change to your verified sender
+    subject: "Your login code for BlockSend",
+    text: text,
+  };
+  await sgMail.send(msg);
+};
+
 router.post("/create", async function (req, res, next) {
   const { amount, paymentId, email, senderName } = req.body;
   console.log("user: ", req.user);
@@ -46,6 +63,9 @@ router.post("/create", async function (req, res, next) {
     paymentId: paymentId || "",
     link: guidGenerator(),
   });
+  const subject = `${senderName} just sent you $${amount} of crypto on BlockSend`;
+  const body = `Your friend ${senderName} just sent you $${amount} of crypto. Log in to pick the coins you want! https://blocksend.co/redeem/${newTransfer.link}`;
+  await sendEmail(user.email, null, subject, body);
   res.json(newTransfer);
 });
 
@@ -67,6 +87,7 @@ router.get("/find/:transferLink", async function (req, res, next) {
     const newCode = generate(6);
     const user = await User.findByPk(transfer.userId);
     await user.update({ verifyCode: newCode });
+    await sendEmail(user.email, newCode);
     console.log("USER VERIFY CODE: ", newCode);
     res.json({ transfer, user: req.user || null, code: newCode });
     return;
