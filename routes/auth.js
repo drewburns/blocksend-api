@@ -5,6 +5,42 @@ const router = express.Router();
 require("../config/passport")(passport);
 const User = require("../models").User;
 
+// TODO: factor out
+function generate(n) {
+  var add = 1,
+    max = 12 - add; // 12 is the min safe number Math.random() can generate without it starting to pad the end with zeros.
+
+  if (n > max) {
+    return generate(max) + generate(n - max);
+  }
+
+  max = Math.pow(10, n + add);
+  var min = max / 10; // Math.pow(10, n) basically
+  var number = Math.floor(Math.random() * (max - min + 1)) + min;
+
+  return ("" + number).substring(add);
+}
+
+router.post("/code", async function (req, res) {
+  const { email } = req.body;
+  const doesUserExist = await User.findOne({
+    where: {
+      email,
+    },
+  });
+  const newCode = generate(6);
+  console.log("NEW CODE: ", newCode);
+  if (!doesUserExist) {
+    const u = await User.create({
+      verifyCode: newCode,
+      email,
+    });
+    res.json({ userId: u.id });
+  } else {
+    await doesUserExist.update({ verifyCode: newCode });
+    res.json({ userId: doesUserExist.id });
+  }
+});
 router.post("/login", async function (req, res) {
   const { userId, verifyCode } = req.body;
 
