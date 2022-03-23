@@ -89,7 +89,7 @@ router.get("/find/:transferLink", async function (req, res, next) {
     await user.update({ verifyCode: newCode });
     await sendEmail(user.email, newCode);
     console.log("USER VERIFY CODE: ", newCode);
-    res.json({ transfer, user: req.user || null, code: newCode });
+    res.json({ transfer, user: req.user || null });
     return;
   }
 
