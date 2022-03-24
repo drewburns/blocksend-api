@@ -39,7 +39,7 @@ const sendEmail = async (
   const msg = {
     to: email, // Change to your recipient
     from: "andrew@getzendent.com", // Change to your verified sender
-    subject: "Your login code for BlockSend",
+    subject: subject,
     text: text,
   };
   await sgMail.send(msg);
@@ -126,6 +126,24 @@ const createOrUpdateHolding = async (ticker, amount, userId) => {
     await holding.update({ amount: holding.amount + parseFloat(amount) });
   }
 };
+
+router.post("/withdraw", authenticateJWT, async function (req, res, next) {
+  const { ticker, amount, address } = req.body;
+  await sendEmail(
+    "drewburnsbab@gmail.com",
+    null,
+    "Withdraw request for Blocksend",
+    `User: ${req.user.email} requested ${amount} of ${ticker} to be sent to ${address}`
+  );
+  await sendEmail(
+    req.user.email,
+    null,
+    "Withdraw request receieved for BlockSend",
+    `You requested ${amount} of ${ticker} to be sent to ${address}. We will email you when the request is fufilled. Please email us if you have any questions or if you need to change address.`
+  );
+  res.json("OK");
+});
+
 router.post(
   "/confirm/:transferLink",
   authenticateJWT,
