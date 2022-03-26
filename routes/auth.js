@@ -4,23 +4,7 @@ const passport = require("passport");
 const router = express.Router();
 require("../config/passport")(passport);
 const User = require("../models").User;
-
-// TODO: factor out
-
-function generate(n) {
-  var add = 1,
-    max = 12 - add; // 12 is the min safe number Math.random() can generate without it starting to pad the end with zeros.
-
-  if (n > max) {
-    return generate(max) + generate(n - max);
-  }
-
-  max = Math.pow(10, n + add);
-  var min = max / 10; // Math.pow(10, n) basically
-  var number = Math.floor(Math.random() * (max - min + 1)) + min;
-
-  return ("" + number).substring(add);
-}
+const { generateRandomCode } = require("../utils/random");
 
 const sendEmail = async (email, code) => {
   const sgMail = require("@sendgrid/mail");
@@ -40,9 +24,8 @@ router.post("/code", async function (req, res) {
       email,
     },
   });
-  const newCode = generate(6);
+  const newCode = generateRandomCode(6);
 
-  console.log("NEW CODE: ", newCode);
   if (!doesUserExist) {
     const u = await User.create({
       verifyCode: newCode,
@@ -72,6 +55,7 @@ router.post("/login", async function (req, res) {
         process.env.JWT_KEY,
         { expiresIn: 86400 * 30 * 30 * 30 }
       );
+      await doesUserExist.update({ verifyCode: null });
       res.json({ token, user: doesUserExist });
     } else {
       res.status(403).json("Wrong login");

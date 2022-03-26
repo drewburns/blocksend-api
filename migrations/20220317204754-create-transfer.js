@@ -12,10 +12,6 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
       },
-      senderName: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
       amount: {
         type: Sequelize.FLOAT,
         allowNull: true,

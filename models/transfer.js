@@ -19,7 +19,6 @@ module.exports = (sequelize, DataTypes) => {
       link: DataTypes.STRING,
       paymentId: DataTypes.STRING,
       redeemedAt: DataTypes.DATE,
-      senderName: DataTypes.STRING,
       paidBySender: DataTypes.BOOLEAN
     },
     {
