@@ -20,13 +20,17 @@ module.exports = {
         type: Sequelize.FLOAT,
         allowNull: true,
       },
-      redeemed: {
-        type: Sequelize.BOOLEAN,
+      redeemedAt: {
+        type: Sequelize.DATE,
         default: false,
       },
       link: {
         type: Sequelize.STRING,
         allowNull: true,
+      },
+      paidBySender: {
+        type: Sequelize.BOOLEAN,
+        default: false,
       },
       paymentId: {
         type: Sequelize.STRING,

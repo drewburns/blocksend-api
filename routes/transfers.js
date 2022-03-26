@@ -155,7 +155,7 @@ router.post(
     const transfer = await Transfer.findOne({
       where: { link: req.params.transferLink },
     });
-    if (!transfer || transfer.redeemed || transfer.userId !== req.user.id) {
+    if (!transfer || transfer.redeemedAt || transfer.userId !== req.user.id) {
       res.status(500).json({ error: "not found" });
       return;
     }
@@ -191,7 +191,7 @@ router.post(
       await createOrUpdateHolding(ticker, coinAmount, req.user.id);
     }
     // save splits to their wallet!
-    await transfer.update({ redeemed: true });
+    await transfer.update({ redeemedAt: new Date() });
 
     res.json("OK");
   }

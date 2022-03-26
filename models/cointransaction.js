@@ -19,7 +19,8 @@ module.exports = (sequelize, DataTypes) => {
     dollarAmount: DataTypes.FLOAT,
     coinAmount: DataTypes.FLOAT,
     coinTicker: DataTypes.STRING,
-    type: DataTypes.STRING
+    type: DataTypes.STRING,
+
   }, {
     sequelize,
     modelName: 'CoinTransaction',

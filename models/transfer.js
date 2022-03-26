@@ -14,11 +14,13 @@ module.exports = (sequelize, DataTypes) => {
   Transfer.init(
     {
       userId: DataTypes.INTEGER,
+      accountId: DataTypes.INTEGER,
       amount: DataTypes.FLOAT,
       link: DataTypes.STRING,
       paymentId: DataTypes.STRING,
-      redeemed: DataTypes.BOOLEAN,
+      redeemedAt: DataTypes.DATE,
       senderName: DataTypes.STRING,
+      paidBySender: DataTypes.BOOLEAN
     },
     {
       sequelize,

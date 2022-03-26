@@ -17,6 +17,7 @@ app.use(cors(corsOptions));
 app.use(logger("dev"));
 
 var indexRouter = require("./routes/index");
+var apiRouter = require("./routes/api");
 var authRouter = require("./routes/auth");
 var transferRouter = require("./routes/transfers");
 var walletRouter = require("./routes/wallets");
@@ -26,6 +27,7 @@ app.use(express.urlencoded({ extended: false }));
 app.listen(process.env.PORT || 80);
 
 app.use("/", indexRouter);
+app.use("/api", apiRouter);
 app.use("/auth", authRouter);
 app.use("/transfer", transferRouter);
 app.use("/wallet", walletRouter);
