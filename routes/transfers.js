@@ -165,7 +165,6 @@ router.post(
       console.log("ACCOUNT:", transfer.accountId);
       await CoinTransaction.create({
         userId: req.user.id,
-        accountId: transfer.accountId, // TODO: we dont really need this!!
         transferId: req.params.transerId,
         dollarAmount: amountUSD,
         coinAmount: coinAmount,
