@@ -117,11 +117,12 @@ router.post("/pay", authenticateAPIRequest, async function (req, res, next) {
   try {
     const newTransfer = await Transfer.create({
       userId: user.id,
+      senderName: req.account.companyName,
       amount,
       accountId: req.account.id,
       link: guidGenerator(),
     });
-    const subject = `${req.account.companyName} just sent you $${amount} of crypto on BlockSend`;
+    const subject = `${req.account.companyName} just sent you $${amount} on BlockSend`;
     const body = `${req.account.companyName} just paid you $${amount}. Log in to pick the coins you want! https://sandbox.blocksend.co/redeem/${newTransfer.link}`;
     await sendEmail(user.email, null, subject, body);
     newTransfer.dataValues.link = `https://sandbox.blocksend.co/redeem/${newTransfer.link}`;

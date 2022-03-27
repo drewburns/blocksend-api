@@ -2,12 +2,12 @@ var express = require("express");
 var router = express.Router();
 const User = require("../models").User;
 const Transfer = require("../models").Transfer;
+const Account = require("../models").Account;
 const CoinTransaction = require("../models").CoinTransaction;
 const CoinHolding = require("../models").CoinHolding;
 const { authenticateJWT } = require("../middleware/auth");
 const axios = require("axios");
 const { guidGenerator, generateRandomCode } = require("../utils/random");
-
 
 const sendEmail = async (
   email,
@@ -54,6 +54,7 @@ router.get("/find/:transferLink", async function (req, res, next) {
   const transferLink = req.params.transferLink;
   const transfer = await Transfer.findOne({ where: { link: transferLink } });
 
+  const account = await Account.findByPk(transfer.accountId);
   if (!transfer) {
     res.status(500).json({ error: "not found" });
     return;
@@ -163,6 +164,7 @@ router.post(
       console.log("coin holding insert: ", coinAmount, amountUSD, ticker);
       await CoinTransaction.create({
         userId: req.user.id,
+        accountId: transfer.accountId, // TODO: we dont really need this!!
         transferId: req.params.transerId,
         dollarAmount: amountUSD,
         coinAmount: coinAmount,
