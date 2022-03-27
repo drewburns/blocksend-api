@@ -75,7 +75,11 @@ router.get("/find/:transferLink", async function (req, res, next) {
     return;
   }
 
-  res.json({ transfer, user: req.user || null });
+  res.json({
+    senderName: account.companyName,
+    transfer,
+    user: req.user || null,
+  });
 });
 
 const getCoinPrice = async (ticker) => {

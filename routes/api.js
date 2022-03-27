@@ -117,7 +117,6 @@ router.post("/pay", authenticateAPIRequest, async function (req, res, next) {
   try {
     const newTransfer = await Transfer.create({
       userId: user.id,
-      senderName: req.account.companyName,
       amount,
       accountId: req.account.id,
       link: guidGenerator(),
