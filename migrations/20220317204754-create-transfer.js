@@ -16,6 +16,10 @@ module.exports = {
         type: Sequelize.FLOAT,
         allowNull: true,
       },
+      accountId: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
       redeemedAt: {
         type: Sequelize.DATE,
         default: false,

@@ -11,6 +11,10 @@ module.exports = {
       email: {
         type: Sequelize.STRING,
         allowNull: false,
+        unique: {
+          args: "email",
+          msg: "The email is already taken!",
+        },
       },
       name: {
         type: Sequelize.STRING,
