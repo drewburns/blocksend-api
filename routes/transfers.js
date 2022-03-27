@@ -162,6 +162,7 @@ router.post(
 
       const coinAmount = await getCoinAmount(amountUSD, ticker);
       console.log("coin holding insert: ", coinAmount, amountUSD, ticker);
+      console.log("ACCOUNT:", transfer.accountId);
       await CoinTransaction.create({
         userId: req.user.id,
         accountId: transfer.accountId, // TODO: we dont really need this!!
