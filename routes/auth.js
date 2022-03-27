@@ -29,6 +29,7 @@ router.post("/code", async function (req, res) {
   if (!doesUserExist) {
     const u = await User.create({
       verifyCode: newCode,
+      name: email,
       email,
     });
     await sendEmail(email, newCode);
