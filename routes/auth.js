@@ -8,11 +8,12 @@ const Transfer = require("../models").Transfer;
 const { generateRandomCode } = require("../utils/random");
 
 const sendEmail = async (email, code) => {
+  console.log("sending email: ", email);
   const sgMail = require("@sendgrid/mail");
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const msg = {
-    to: email, // Change to your recipient
-    from: "andrew.burns@uconn.edu", // Change to your verified sender
+    to: email, 
+    from: "andrew.burns@uconn.edu", 
     subject: "Your login code for BlockSend",
     text: `Your login code is ${code}`,
   };
@@ -20,20 +21,25 @@ const sendEmail = async (email, code) => {
 };
 router.post("/code", async function (req, res) {
   const { email, transferId } = req.body;
-  var doesUserExist = await User.findOne({
-    where: {
-      email,
-    },
-  });
 
+  var doesUserExist = null;
   if (!email && transferId) {
     const transfer = await Transfer.findByPk(transferId);
     doesUserExist = await User.findByPk(transfer.userId);
-    if (!doesUserExist) { // something went seriously wrong
+    if (!doesUserExist) {
+      // something went seriously wrong
       res.status(500).json("Something went wrong");
       return;
     }
+  } else {
+    doesUserExist = await User.findOne({
+      where: {
+        email,
+      },
+    });
   }
+
+  console.log("here!", doesUserExist);
   const newCode = generateRandomCode(6);
 
   if (!doesUserExist) {
@@ -45,8 +51,9 @@ router.post("/code", async function (req, res) {
     await sendEmail(email, newCode);
     res.json({ userId: u.id });
   } else {
+    console.log("sending1!", doesUserExist);
     await doesUserExist.update({ verifyCode: newCode });
-    await sendEmail(email, newCode);
+    await sendEmail(doesUserExist.email, newCode);
     res.json({ userId: doesUserExist.id });
   }
 });
