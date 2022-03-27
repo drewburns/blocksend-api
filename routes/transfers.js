@@ -55,6 +55,7 @@ router.get("/find/:transferLink", async function (req, res, next) {
   const transfer = await Transfer.findOne({ where: { link: transferLink } });
 
   const account = await Account.findByPk(transfer.accountId);
+  console.log("ACCOUNT: ", account);
   if (!transfer) {
     res.status(500).json({ error: "not found" });
     return;
@@ -71,7 +72,11 @@ router.get("/find/:transferLink", async function (req, res, next) {
     await user.update({ verifyCode: newCode });
     await sendEmail(user.email, newCode);
     console.log("USER VERIFY CODE: ", newCode);
-    res.json({ transfer, user: req.user || null });
+    res.json({
+      senderName: account.companyName,
+      transfer,
+      user: req.user || null,
+    });
     return;
   }
 
