@@ -66,19 +66,19 @@ router.get("/find/:transferLink", async function (req, res, next) {
     return;
   }
 
-  if (!req.user) {
-    const newCode = generateRandomCode(6);
-    const user = await User.findByPk(transfer.userId);
-    await user.update({ verifyCode: newCode });
-    await sendEmail(user.email, newCode);
-    console.log("USER VERIFY CODE: ", newCode);
-    res.json({
-      senderName: account.companyName,
-      transfer,
-      user: req.user || null,
-    });
-    return;
-  }
+  // if (!req.user) {
+  //   const newCode = generateRandomCode(6);
+  //   const user = await User.findByPk(transfer.userId);
+  //   await user.update({ verifyCode: newCode });
+  //   await sendEmail(user.email, newCode);
+  //   console.log("USER VERIFY CODE: ", newCode);
+  //   res.json({
+  //     senderName: account.companyName,
+  //     transfer,
+  //     user: req.user || null,
+  //   });
+  //   return;
+  // }
 
   res.json({
     senderName: account.companyName,

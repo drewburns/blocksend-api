@@ -4,6 +4,7 @@ const passport = require("passport");
 const router = express.Router();
 require("../config/passport")(passport);
 const User = require("../models").User;
+const Transfer = require("../models").Transfer;
 const { generateRandomCode } = require("../utils/random");
 
 const sendEmail = async (email, code) => {
@@ -18,12 +19,21 @@ const sendEmail = async (email, code) => {
   await sgMail.send(msg);
 };
 router.post("/code", async function (req, res) {
-  const { email } = req.body;
-  const doesUserExist = await User.findOne({
+  const { email, transferId } = req.body;
+  var doesUserExist = await User.findOne({
     where: {
       email,
     },
   });
+
+  if (!email && transferId) {
+    const transfer = await Transfer.findByPk(transferId);
+    doesUserExist = await User.findByPk(transfer.userId);
+    if (!doesUserExist) { // something went seriously wrong
+      res.status(500).json("Something went wrong");
+      return;
+    }
+  }
   const newCode = generateRandomCode(6);
 
   if (!doesUserExist) {
