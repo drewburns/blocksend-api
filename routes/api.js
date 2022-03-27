@@ -60,8 +60,8 @@ router.post("/auth", async function (req, res, next) {
 router.post("/user", authenticateAPIRequest, async function (req, res, next) {
   console.log("upserting user");
   const { email, userName } = req.body;
-  if (!email || !userName) {
-    res.status(400).json("Need email and name");
+  if (!email) {
+    res.status(400).json("Need email");
     return;
   }
 
@@ -69,7 +69,7 @@ router.post("/user", authenticateAPIRequest, async function (req, res, next) {
     where: { email },
   });
   if (!user) {
-    user = await User.create({ name: userName, email });
+    user = await User.create({ name: userName || email, email });
   } else {
     await user.update({
       ...(email && { email }),
