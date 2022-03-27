@@ -10,6 +10,11 @@ module.exports = {
       },
       userId: {
         type: Sequelize.INTEGER,
+        allowNull: false,
+      },
+      accountId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
       },
       transferId: {
         type: Sequelize.INTEGER,
@@ -20,12 +25,15 @@ module.exports = {
       },
       dollarAmount: {
         type: Sequelize.FLOAT,
+        allowNull: false,
       },
       coinAmount: {
         type: Sequelize.FLOAT,
+        allowNull: false,
       },
       coinTicker: {
         type: Sequelize.STRING,
+        allowNull: false,
       },
       createdAt: {
         allowNull: false,

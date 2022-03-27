@@ -6,27 +6,8 @@ const CoinTransaction = require("../models").CoinTransaction;
 const CoinHolding = require("../models").CoinHolding;
 const { authenticateJWT } = require("../middleware/auth");
 const axios = require("axios");
-function guidGenerator() {
-  var S4 = function () {
-    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-  };
-  return S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4();
-}
+const { guidGenerator, generateRandomCode } = require("../utils/random");
 
-function generate(n) {
-  var add = 1,
-    max = 12 - add; // 12 is the min safe number Math.random() can generate without it starting to pad the end with zeros.
-
-  if (n > max) {
-    return generate(max) + generate(n - max);
-  }
-
-  max = Math.pow(10, n + add);
-  var min = max / 10; // Math.pow(10, n) basically
-  var number = Math.floor(Math.random() * (max - min + 1)) + min;
-
-  return ("" + number).substring(add);
-}
 
 const sendEmail = async (
   email,
@@ -38,36 +19,36 @@ const sendEmail = async (
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const msg = {
     to: email, // Change to your recipient
-    from: "andrew@getzendent.com", // Change to your verified sender
+    from: "andrew.burns@uconn.edu", // Change to your verified sender
     subject: subject,
     text: text,
   };
   await sgMail.send(msg);
 };
 
-router.post("/create", async function (req, res, next) {
-  const { amount, paymentId, email, senderName } = req.body;
-  console.log("user: ", req.user);
-  var user = null;
-  const foundUser = await User.findOne({ where: { email } });
-  if (!foundUser) {
-    user = await User.create({ email });
-  } else {
-    user = foundUser;
-  }
+// router.post("/create", async function (req, res, next) {
+//   const { amount, paymentId, email, senderName } = req.body;
+//   console.log("user: ", req.user);
+//   var user = null;
+//   const foundUser = await User.findOne({ where: { email } });
+//   if (!foundUser) {
+//     user = await User.create({ email });
+//   } else {
+//     user = foundUser;
+//   }
 
-  const newTransfer = await Transfer.create({
-    userId: user.id,
-    amount,
-    senderName,
-    paymentId: paymentId || "",
-    link: guidGenerator(),
-  });
-  const subject = `${senderName} just sent you $${amount} of crypto on BlockSend`;
-  const body = `Your friend ${senderName} just sent you $${amount} of crypto. Log in to pick the coins you want! https://blocksend.co/redeem/${newTransfer.link}`;
-  await sendEmail(user.email, null, subject, body);
-  res.json(newTransfer);
-});
+//   const newTransfer = await Transfer.create({
+//     userId: user.id,
+//     amount,
+//     senderName,
+//     paymentId: paymentId || "",
+//     link: guidGenerator(),
+//   });
+//   const subject = `${senderName} just sent you $${amount} of crypto on BlockSend`;
+//   const body = `Your friend ${senderName} just sent you $${amount} of crypto. Log in to pick the coins you want! https://blocksend.co/redeem/${newTransfer.link}`;
+//   await sendEmail(user.email, null, subject, body);
+//   res.json(newTransfer);
+// });
 
 router.get("/find/:transferLink", async function (req, res, next) {
   const transferLink = req.params.transferLink;
@@ -84,7 +65,7 @@ router.get("/find/:transferLink", async function (req, res, next) {
   }
 
   if (!req.user) {
-    const newCode = generate(6);
+    const newCode = generateRandomCode(6);
     const user = await User.findByPk(transfer.userId);
     await user.update({ verifyCode: newCode });
     await sendEmail(user.email, newCode);
@@ -155,7 +136,7 @@ router.post(
     const transfer = await Transfer.findOne({
       where: { link: req.params.transferLink },
     });
-    if (!transfer || transfer.redeemed || transfer.userId !== req.user.id) {
+    if (!transfer || transfer.redeemedAt || transfer.userId !== req.user.id) {
       res.status(500).json({ error: "not found" });
       return;
     }
@@ -191,7 +172,7 @@ router.post(
       await createOrUpdateHolding(ticker, coinAmount, req.user.id);
     }
     // save splits to their wallet!
-    await transfer.update({ redeemed: true });
+    await transfer.update({ redeemedAt: new Date() });
 
     res.json("OK");
   }
