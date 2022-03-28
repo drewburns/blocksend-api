@@ -12,10 +12,27 @@ const sendEmail = async (email, code) => {
   const sgMail = require("@sendgrid/mail");
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const msg = {
-    to: email, 
-    from: "andrew.burns@uconn.edu", 
+    to: email,
+    from: "andrew.burns@uconn.edu",
     subject: "Your login code for BlockSend",
-    text: `Your login code is ${code}`,
+    html: `<html>
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <style>
+      </style>
+    </head>
+    <body class="bg-light">
+      <div class="container">
+        <div class="card my-10">
+          <div class="card-body">
+            <h1 class="h3 mb-2">BlockSend</h1>
+            <h2 class="text-teal-700">Your login code is ${code}</h3>
+            <hr>
+            <p>If you have any problems reach out to help@blocksend.co</p>
+        </div>
+      </div>
+    </body>
+  </html>`,
   };
   await sgMail.send(msg);
 };

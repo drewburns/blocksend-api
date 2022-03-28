@@ -21,7 +21,24 @@ const sendEmail = async (
     to: email, // Change to your recipient
     from: "andrew.burns@uconn.edu", // Change to your verified sender
     subject: subject,
-    text: text,
+    html: `<html>
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <style>
+      </style>
+    </head>
+    <body class="bg-light">
+      <div class="container">
+        <div class="card my-10">
+          <div class="card-body">
+            <h1 class="h3 mb-2">BlockSend</h1>
+            <h2 class="text-teal-700">${text}</h3>
+            <hr>
+            <p>If you have any problems reach out to help@blocksend.co</p>
+        </div>
+      </div>
+    </body>
+  </html>`,
   };
   await sgMail.send(msg);
 };
