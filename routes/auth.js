@@ -13,7 +13,7 @@ const sendEmail = async (email, code) => {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const msg = {
     to: email,
-    from: "andrew.burns@uconn.edu",
+    from: "support@blocksend.co",
     subject: "Your login code for BlockSend",
     html: `<html>
     <head>
