@@ -67,9 +67,20 @@ const sendEmail = async (
 //   res.json(newTransfer);
 // });
 
+function validateEmail(email) {
+  var re = /\S+@\S+\.\S+/;
+  return re.test(email);
+}
+
+function isValidPhone(p) {
+  var phoneRe = /^[2-9]\d{2}[2-9]\d{2}\d{4}$/;
+  var digits = p.replace(/\D/g, "");
+  return phoneRe.test(digits);
+}
 router.post("/mockEmail", async function (req, res, next) {
   const allowedCoins = ["btc", "eth", "sol", "doge", "usdc"];
   const { coins, email } = req.body;
+
   var coinString = "";
   var total = 120;
   for (const [key, value] of Object.entries(coins)) {
@@ -77,12 +88,26 @@ router.post("/mockEmail", async function (req, res, next) {
   }
   const body = `Congrats! You have been sent: ${coinString} `;
 
-  await sendEmail(
-    email,
-    null,
-    `Confirmation payout of $${120} from BlockSend.`,
-    body
-  );
+  if (validateEmail(email)) {
+    await sendEmail(
+      email,
+      null,
+      `Confirmation payout of $${120} from BlockSend.`,
+      body
+    );
+  }
+  if (isValidPhone(email)) {
+    const number = "9105438103";
+    const sid = process.env.TWILIO_SID;
+    const token = process.env.TWILIO_TOKEN;
+    const client = require("twilio")(sid, token);
+    await client.messages.create({
+      body: `Confirmation payout of $${120} from BlockSend. You have been paid: ${coinString}`,
+      from: number,
+      to: email,
+    });
+  }
+
   console.log("coins: ", coins);
   res.json("OK");
 });
