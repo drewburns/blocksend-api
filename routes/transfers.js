@@ -67,6 +67,26 @@ const sendEmail = async (
 //   res.json(newTransfer);
 // });
 
+router.post("/mockEmail", async function (req, res, next) {
+  const allowedCoins = ["btc", "eth", "sol", "doge", "usdc"];
+  const { coins, email } = req.body;
+  var coinString = "";
+  var total = 120;
+  for (const [key, value] of Object.entries(coins)) {
+    coinString += ` $${value} of ${key.toUpperCase()}.`;
+  }
+  const body = `Congrats! You have been sent: ${coinString} `;
+
+  await sendEmail(
+    email,
+    null,
+    `Confirmation payout of $${120} from BlockSend.`,
+    body
+  );
+  console.log("coins: ", coins);
+  res.json("OK");
+});
+
 router.get("/find/:transferLink", async function (req, res, next) {
   const transferLink = req.params.transferLink;
   const transfer = await Transfer.findOne({ where: { link: transferLink } });
