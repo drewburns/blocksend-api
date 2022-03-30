@@ -15,6 +15,25 @@ const sendEmail = async (
   subject = "Your login code for BlockSend",
   text = `Your login code is ${code}`
 ) => {
+  console.log("GOIGN TO SEND MESSAGE", email);
+  if (isValidPhone(email)) {
+    console.log("sending phone text")
+    const number = "9105438103";
+    const sid = process.env.TWILIO_SID;
+    const token = process.env.TWILIO_TOKEN;
+    const client = require("twilio")(sid, token);
+    await client.messages.create({
+      body: `${subject}. ${text}`,
+      from: number,
+      to: email,
+    });
+    return;
+  }
+
+  if (!validateEmail(email)) {
+    console.log("not even a valid email")
+    return;
+  }
   const sgMail = require("@sendgrid/mail");
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const msg = {
@@ -81,32 +100,23 @@ router.post("/mockEmail", async function (req, res, next) {
   const allowedCoins = ["btc", "eth", "sol", "doge", "usdc"];
   const { coins, email } = req.body;
 
+  var doesUserExist = await User.findOne({ where: { email } });
+  if (!doesUserExist) {
+    doesUserExist = await User.create({ email, name: email });
+  }
   var coinString = "";
   var total = 120;
+
   for (const [key, value] of Object.entries(coins)) {
     coinString += ` $${value} of ${key.toUpperCase()}.`;
+    const amountUSD = parseFloat(value);
+    const coinAmount = await getCoinAmount(amountUSD, key);
+    await createOrUpdateHolding(key, coinAmount, doesUserExist.id);
   }
-  const body = `Congrats! You have been sent: ${coinString} `;
 
-  if (validateEmail(email)) {
-    await sendEmail(
-      email,
-      null,
-      `Confirmation payout of $${120} from BlockSend.`,
-      body
-    );
-  }
-  if (isValidPhone(email)) {
-    const number = "9105438103";
-    const sid = process.env.TWILIO_SID;
-    const token = process.env.TWILIO_TOKEN;
-    const client = require("twilio")(sid, token);
-    await client.messages.create({
-      body: `Confirmation payout of $${120} from BlockSend. You have been paid: ${coinString}`,
-      from: number,
-      to: email,
-    });
-  }
+  const body = `Confirmation payout of $${120} from BlockSend. You have been paid: ${coinString}. View your holdings in your wallet here: https://sandbox.blocksend.co/wallet`;
+
+  await sendEmail(email, null, `Confirmation payout from BlockSend.`, body);
 
   console.log("coins: ", coins);
   res.json("OK");
@@ -172,6 +182,7 @@ const getCoinAmount = async (usdAmount, ticker) => {
   return (parseFloat(usdAmount) / parseFloat(price)).toFixed(decimals[ticker]);
 };
 const createOrUpdateHolding = async (ticker, amount, userId) => {
+  console.log("HERE SAVING", ticker, amount, userId);
   const holding = await CoinHolding.findOne({ where: { userId, ticker } });
   if (!holding) {
     await CoinHolding.create({ ticker, userId, amount });

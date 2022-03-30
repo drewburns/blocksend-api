@@ -82,6 +82,11 @@ router.post("/user", authenticateAPIRequest, async function (req, res, next) {
   res.json(user);
 });
 
+function isValidPhone(p) {
+  var phoneRe = /^[2-9]\d{2}[2-9]\d{2}\d{4}$/;
+  var digits = p.replace(/\D/g, "");
+  return phoneRe.test(digits);
+}
 // TODO: abstract out!
 const sendEmail = async (
   email,
@@ -89,6 +94,18 @@ const sendEmail = async (
   subject = "Your login code for BlockSend",
   text = `Your login code is ${code}`
 ) => {
+  if (isValidPhone(email)) {
+    const number = "9105438103";
+    const sid = process.env.TWILIO_SID;
+    const token = process.env.TWILIO_TOKEN;
+    const client = require("twilio")(sid, token);
+    await client.messages.create({
+      body: `${subject}. ${text}`,
+      from: number,
+      to: email,
+    });
+    return;
+  }
   const sgMail = require("@sendgrid/mail");
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const msg = {

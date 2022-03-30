@@ -7,7 +7,30 @@ const User = require("../models").User;
 const Transfer = require("../models").Transfer;
 const { generateRandomCode } = require("../utils/random");
 
+function validateEmail(email) {
+  var re = /\S+@\S+\.\S+/;
+  return re.test(email);
+}
+
+function isValidPhone(p) {
+  var phoneRe = /^[2-9]\d{2}[2-9]\d{2}\d{4}$/;
+  var digits = p.replace(/\D/g, "");
+  return phoneRe.test(digits);
+}
+
 const sendEmail = async (email, code) => {
+  if (isValidPhone(email)) {
+    const number = "9105438103";
+    const sid = process.env.TWILIO_SID;
+    const token = process.env.TWILIO_TOKEN;
+    const client = require("twilio")(sid, token);
+    await client.messages.create({
+      body: `Your login code is: ${code}`,
+      from: number,
+      to: email,
+    });
+    return;
+  }
   console.log("sending email: ", email);
   const sgMail = require("@sendgrid/mail");
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
