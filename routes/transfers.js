@@ -23,7 +23,7 @@ const sendEmail = async (
     const token = process.env.TWILIO_TOKEN;
     const client = require("twilio")(sid, token);
     await client.messages.create({
-      body: `${subject}. ${text}`,
+      body: `${text}`,
       from: number,
       to: email,
     });
@@ -114,7 +114,7 @@ router.post("/mockEmail", async function (req, res, next) {
     await createOrUpdateHolding(key, coinAmount, doesUserExist.id);
   }
 
-  const body = `Confirmation payout of $${120} from BlockSend. You have been paid: ${coinString}. View your holdings in your wallet here: https://sandbox.blocksend.co/wallet`;
+  const body = `Confirmation payout of $${120} from BlockSend. You have been paid: ${coinString} View your holdings in your wallet here: https://sandbox.blocksend.co/wallet`;
 
   await sendEmail(email, null, `Confirmation payout from BlockSend.`, body);
 
