@@ -8,6 +8,7 @@ const { authenticateAPIRequest } = require("../middleware/auth");
 const { guidGenerator } = require("../utils/random");
 const crypto = require("crypto");
 const { Op } = require("sequelize");
+const bcrypt = require("bcrypt");
 
 router.get("/health", async function (req, res, next) {
   res.json("OK");
@@ -29,7 +30,13 @@ router.post("/account", async function (req, res, next) {
   }
 
   const secretKey = crypto.randomBytes(16).toString("hex");
-  const acc = await Account.create({ email, companyName, secretKey });
+  const hashedKey = bcrypt.hashSync(secretKey, 10);
+  const acc = await Account.create({
+    email,
+    companyName,
+    secretKey: hashedKey,
+  });
+  acc.dataValues.secretKey = secretKey;
   res.json({ account: acc });
 });
 
