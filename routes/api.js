@@ -144,7 +144,7 @@ const sendEmail = async (
 // create a transfer for a user from the account
 router.post("/pay", authenticateAPIRequest, async function (req, res, next) {
   var { blockSendUserId, email, amount } = req.body;
-  amount = parseFloat(amount).toFixed(2);
+  amount = parseInt(amount);
   var user = await User.findOne({
     where: {
       [Op.or]: [{ email: email || "" }, { id: blockSendUserId || null }],
@@ -162,8 +162,9 @@ router.post("/pay", authenticateAPIRequest, async function (req, res, next) {
       accountId: req.account.id,
       link: guidGenerator(),
     });
-    const subject = `${req.account.companyName} just sent you $${amount} on BlockSend`;
-    const body = `${req.account.companyName} just paid you $${amount}. Log in to pick the coins you want! https://sandbox.blocksend.co/redeem/${newTransfer.link}`;
+    const dollarAmount = (amount / 100).toFixed(2);
+    const subject = `${req.account.companyName} just sent you $${dollarAmount} on BlockSend`;
+    const body = `${dollarAmount} just paid you $${dollarAmount}. Log in to pick the coins you want! https://sandbox.blocksend.co/redeem/${newTransfer.link}`;
     await sendEmail(user.email, null, subject, body);
     newTransfer.dataValues.link = `https://sandbox.blocksend.co/redeem/${newTransfer.link}`;
     res.json({ transfer: newTransfer });

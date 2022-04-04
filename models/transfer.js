@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       userId: DataTypes.INTEGER,
       accountId: DataTypes.INTEGER,
-      amount: DataTypes.FLOAT,
+      amount: DataTypes.INTEGER,
       link: DataTypes.STRING,
       paymentId: DataTypes.STRING,
       redeemedAt: DataTypes.DATE,

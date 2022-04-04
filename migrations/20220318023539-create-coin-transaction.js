@@ -24,7 +24,7 @@ module.exports = {
         default: "IN",
       },
       dollarAmount: {
-        type: Sequelize.FLOAT,
+        type: Sequelize.INTEGER,
         allowNull: false,
       },
       coinAmount: {

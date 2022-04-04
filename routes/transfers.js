@@ -17,7 +17,7 @@ const sendEmail = async (
 ) => {
   console.log("GOIGN TO SEND MESSAGE", email);
   if (isValidPhone(email)) {
-    console.log("sending phone text")
+    console.log("sending phone text");
     const number = "9105438103";
     const sid = process.env.TWILIO_SID;
     const token = process.env.TWILIO_TOKEN;
@@ -31,7 +31,7 @@ const sendEmail = async (
   }
 
   if (!validateEmail(email)) {
-    console.log("not even a valid email")
+    console.log("not even a valid email");
     return;
   }
   const sgMail = require("@sendgrid/mail");
@@ -98,22 +98,27 @@ function isValidPhone(p) {
 }
 router.post("/mockEmail", async function (req, res, next) {
   const allowedCoins = ["btc", "eth", "sol", "doge", "usdc"];
-  const { coins, email } = req.body;
+  var { coins, email } = req.body;
 
   var doesUserExist = await User.findOne({ where: { email } });
   if (!doesUserExist) {
     doesUserExist = await User.create({ email, name: email });
   }
   var coinString = "";
-  var total = 120;
+  var total = 120 * 100;
 
+  if (Object.entries(coins).length === 0) {
+    coins = { usdc: 120 * 100 };
+  }
   for (const [key, value] of Object.entries(coins)) {
-    coinString += ` $${value} of ${key.toUpperCase()}.`;
-    const amountUSD = parseFloat(value);
+    const amountUSD = (value / 100).toFixed(2);
+    console.log("amountUSD:", amountUSD, value, key);
+    coinString += ` $${amountUSD} of ${key.toUpperCase()}.`;
     const coinAmount = await getCoinAmount(amountUSD, key);
     await createOrUpdateHolding(key, coinAmount, doesUserExist.id);
   }
 
+  console.log("coin string:", coinString);
   const body = `Confirmation payout of $${120} from BlockSend. You have been paid: ${coinString} View your holdings in your wallet here: https://sandbox.blocksend.co/wallet`;
 
   await sendEmail(email, null, `Confirmation payout from BlockSend.`, body);
@@ -137,20 +142,6 @@ router.get("/find/:transferLink", async function (req, res, next) {
     res.status(500).json({ error: "wrong user" });
     return;
   }
-
-  // if (!req.user) {
-  //   const newCode = generateRandomCode(6);
-  //   const user = await User.findByPk(transfer.userId);
-  //   await user.update({ verifyCode: newCode });
-  //   await sendEmail(user.email, newCode);
-  //   console.log("USER VERIFY CODE: ", newCode);
-  //   res.json({
-  //     senderName: account.companyName,
-  //     transfer,
-  //     user: req.user || null,
-  //   });
-  //   return;
-  // }
 
   res.json({
     senderName: account.companyName,
@@ -179,6 +170,7 @@ const getCoinPrice = async (ticker) => {
 const getCoinAmount = async (usdAmount, ticker) => {
   const price = await getCoinPrice(ticker);
   const decimals = { sol: 9, btc: 8, eth: 18, doge: 8 };
+  console.log("USD AMOUNT: ", usdAmount);
   return (parseFloat(usdAmount) / parseFloat(price)).toFixed(decimals[ticker]);
 };
 const createOrUpdateHolding = async (ticker, amount, userId) => {
@@ -203,7 +195,9 @@ router.post("/withdraw", authenticateJWT, async function (req, res, next) {
     req.user.email,
     null,
     "Withdraw request receieved for BlockSend",
-    `You requested ${amount} of ${ticker} to be sent to ${address}. We will email you when the request is fufilled. Please email us if you have any questions or if you need to change address.`
+    `You requested ${(parseInt(amount) / 100).toFixed(
+      2
+    )} of ${ticker} to be sent to ${address}. We will email you when the request is fufilled. Please email us if you have any questions or if you need to change address.`
   );
   res.json("OK");
 });
@@ -215,7 +209,6 @@ router.post(
     console.log("ABOUT TO CONFIRM!!!");
     const allowedCoins = ["btc", "eth", "sol", "doge", "usdc"];
     const { coins } = req.body;
-    console.log("body: ", req.body);
     const transfer = await Transfer.findOne({
       where: { link: req.params.transferLink },
     });
@@ -224,17 +217,18 @@ router.post(
       return;
     }
 
-    let runningTotal = 0.0;
+    let runningTotal = 0;
     console.log("coins: ", coins);
     for (const [key, value] of Object.entries(coins)) {
       const ticker = key;
-      const amountUSD = parseFloat(value);
+      const centsUsd = parseInt(value);
+      const amountUSD = (value / 100).toFixed(2);
       if (!allowedCoins.includes(ticker)) {
         console.log("wrong ticker", ticker);
         res.status(500).json({ error: "error" });
         return;
       }
-      runningTotal += amountUSD;
+      runningTotal += centsUsd;
       console.log("running total: ", runningTotal, transfer.amount);
       if (runningTotal > transfer.amount) {
         console.log("too much");
@@ -248,11 +242,12 @@ router.post(
       await CoinTransaction.create({
         userId: req.user.id,
         transferId: req.params.transerId,
-        dollarAmount: amountUSD,
+        dollarAmount: centsUsd,
         coinAmount: coinAmount,
         coinTicker: ticker,
       });
 
+      console.log("COIN AMOUNT: ", coinAmount);
       await createOrUpdateHolding(ticker, coinAmount, req.user.id);
     }
     // save splits to their wallet!

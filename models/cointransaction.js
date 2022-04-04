@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
   CoinTransaction.init({
     userId: DataTypes.INTEGER,
     transferId: DataTypes.INTEGER,
-    dollarAmount: DataTypes.FLOAT,
+    dollarAmount: DataTypes.INTEGER,
     coinAmount: DataTypes.FLOAT,
     coinTicker: DataTypes.STRING,
     type: DataTypes.STRING,

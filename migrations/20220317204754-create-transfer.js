@@ -13,7 +13,7 @@ module.exports = {
         allowNull: true,
       },
       amount: {
-        type: Sequelize.FLOAT,
+        type: Sequelize.INTEGER,
         allowNull: true,
       },
       accountId: {

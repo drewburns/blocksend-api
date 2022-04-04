@@ -30,7 +30,9 @@ router.get("/", authenticateJWT, async function (req, res, next) {
   });
   for (x in holdings) {
     const price = await getCoinPrice(holdings[x].ticker);
-    holdings[x].dataValues.price = (holdings[x].amount * price).toFixed(2)
+    holdings[x].dataValues.price = (holdings[x].amount * 100 * price).toFixed(
+      2
+    );
   }
   console.log(holdings);
   res.json(holdings);
