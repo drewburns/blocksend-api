@@ -1,8 +1,11 @@
 "use strict";
 
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    queryInterface.removeColumn("CoinTransactions", "accountId")
+  async up(queryInterface, Sequelize) {
+    queryInterface.addColumn("Accounts", "balance", {
+      type: Sequelize.INTEGER,
+      defaultValue: 0,
+    });
     /**
      * Add altering commands here.
      *
@@ -11,7 +14,8 @@ module.exports = {
      */
   },
 
-  down: async (queryInterface, Sequelize) => {
+  async down(queryInterface, Sequelize) {
+    queryInterface.removeColumn("Accounts", "balance");
     /**
      * Add reverting commands here.
      *
