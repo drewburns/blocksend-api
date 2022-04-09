@@ -13,7 +13,15 @@ if (config.use_env_variable) {
   sequelize = new Sequelize(process.env[config.use_env_variable], config);
 } else {
   if (config.psqlString) {
-    sequelize = new Sequelize(config.psqlString);
+    sequelize = new Sequelize(config.psqlString, {
+      ssl: { rejectUnauthorized: false },
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false, // <<<<<<< YOU NEED THIS
+        },
+      },
+    });
   } else {
     sequelize = new Sequelize(
       config.database,
