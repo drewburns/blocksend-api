@@ -20,11 +20,12 @@ module.exports = {
     host: process.env.DB_PROD_HOST,
     psqlString: process.env.DATABASE_URL,
     dialect: "postgres",
+    ssl: { rejectUnauthorized: false },
     dialectOptions: {
       ssl: {
         require: true,
-        rejectUnauthorized: false // <<<<<<< YOU NEED THIS
-      }
+        rejectUnauthorized: false, // <<<<<<< YOU NEED THIS
+      },
     },
   },
 };
