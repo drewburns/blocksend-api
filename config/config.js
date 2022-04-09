@@ -1,4 +1,3 @@
-
 module.exports = {
   development: {
     username: "andrewburns",
@@ -19,6 +18,9 @@ module.exports = {
     password: process.env.DB_PROD_PASSWORD,
     database: process.env.DB_PROD_DATABASE,
     host: process.env.DB_PROD_HOST,
+    psqlString: process.env.DATABASE_URL,
     dialect: "postgres",
   },
 };
+
+
