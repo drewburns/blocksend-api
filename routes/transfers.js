@@ -150,6 +150,8 @@ router.get("/find/:transferLink", async function (req, res, next) {
   });
 });
 
+
+
 const getCoinPrice = async (ticker) => {
   const coinMapping = {
     btc: "bitcoin",
@@ -256,5 +258,40 @@ router.post(
     res.json("OK");
   }
 );
+
+// jenky
+router.post(
+  "/claim/",
+  authenticateJWT,
+  async function (req, res, next) {
+    // 1. get our self funded account
+    // 2. get the user 
+    // 3. see if that user already has a transfer from this account
+    // 4. if not, send them $5
+
+    const account = await Account.findOne(process.env.BLOCKSEND_ACCOUNT_ID)
+    const transfer = await Transfer.findOne({ where: { accountId: account.id, userId: req.user.id } })
+    if (transfer) {
+      res.status(500).json({ error: "Already redeemded" });
+      return;
+    }
+
+    const amount = 1000
+    const newTransfer = await Transfer.create({
+      userId: req.user.id,
+      amount,
+      accountId: account.id,
+      link: guidGenerator(),
+    });
+
+    const dollarAmount = (amount / 100).toFixed(2);
+    const subject = `${account.companyName} just sent you $${dollarAmount} on BlockSend`;
+    const body = `${dollarAmount} just paid you $${dollarAmount}. Log in to pick the coins you want! https://sandbox.blocksend.co/redeem/${newTransfer.link}`;
+    await sendEmail(req.user.email, null, subject, body);
+    account.update({ balance: acc.balance - amount });
+    newTransfer.dataValues.link = `https://sandbox.blocksend.co/redeem/${newTransfer.link}`;
+
+    res.json(newTransfer)
+  });
 
 module.exports = router;
