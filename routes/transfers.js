@@ -119,7 +119,7 @@ router.post("/mockEmail", async function (req, res, next) {
   }
 
   console.log("coin string:", coinString);
-  const body = `Confirmation payout of $${120} from BlockSend. You have been paid: ${coinString} View your holdings in your wallet here: https://sandbox.blocksend.co/wallet`;
+  const body = `Confirmation payout of $${120} from BlockSend. You have been paid: ${coinString} View your holdings in your wallet here: https://app.blocksend.co/wallet`;
 
   await sendEmail(email, null, `Confirmation payout from BlockSend.`, body);
 

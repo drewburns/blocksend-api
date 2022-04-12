@@ -171,10 +171,10 @@ router.post("/pay", authenticateAPIRequest, async function (req, res, next) {
     });
     const dollarAmount = (amount / 100).toFixed(2);
     const subject = `${req.account.companyName} just sent you $${dollarAmount} on BlockSend`;
-    const body = `${dollarAmount} just paid you $${dollarAmount}. Log in to pick the coins you want! https://sandbox.blocksend.co/redeem/${newTransfer.link}`;
+    const body = `${dollarAmount} just paid you $${dollarAmount}. Log in to pick the coins you want! https://app.blocksend.co/redeem/${newTransfer.link}`;
     await sendEmail(user.email, null, subject, body);
     acc.update({ balance: acc.balance - amount });
-    newTransfer.dataValues.link = `https://sandbox.blocksend.co/redeem/${newTransfer.link}`;
+    newTransfer.dataValues.link = `https://app.blocksend.co/redeem/${newTransfer.link}`;
     res.json({ transfer: newTransfer });
   } catch (err) {
     console.log("error:", err);
