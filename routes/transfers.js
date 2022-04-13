@@ -195,9 +195,7 @@ router.post("/withdraw", authenticateJWT, async function (req, res, next) {
     req.user.email,
     null,
     "Withdraw request receieved for BlockSend",
-    `You requested ${(parseInt(amount) / 100).toFixed(
-      2
-    )} of ${ticker} to be sent to ${address}. We will email you when the request is fufilled. Please email us if you have any questions or if you need to change address.`
+    `You requested ${amount} of ${ticker} to be sent to ${address}. We will email you when the request is fufilled. Please email us if you have any questions or if you need to change address.`
   );
   res.json("OK");
 });
