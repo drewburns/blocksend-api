@@ -30,6 +30,7 @@ var apiRouter = require("./routes/api");
 var authRouter = require("./routes/auth");
 var transferRouter = require("./routes/transfers");
 var walletRouter = require("./routes/wallets");
+var adminRouter = require("./routes/admin");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -40,5 +41,6 @@ app.use("/api", apiRouter);
 app.use("/auth", authRouter);
 app.use("/transfer", transferRouter);
 app.use("/wallet", walletRouter);
+app.use("/admin", adminRouter);
 
 module.exports = app;

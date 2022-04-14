@@ -34,6 +34,24 @@ const authenticateAPIRequest = (req, res, next) => {
   }
 };
 
+const authenticateAccountJWT = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  console.log("TOKEN: ", authHeader);
+  if (authHeader) {
+    const token = authHeader.split(" ")[1];
+    jwt.verify(token, process.env.JWT_KEY, (err, account) => {
+      if (err) {
+        console.log(err);
+        return res.sendStatus(403);
+      }
+      req.account = account;
+      next();
+    });
+  } else {
+    res.sendStatus(401);
+  }
+};
+
 const authenticateJWT = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -51,4 +69,8 @@ const authenticateJWT = (req, res, next) => {
   }
 };
 
-module.exports = { authenticateJWT, authenticateAPIRequest };
+module.exports = {
+  authenticateJWT,
+  authenticateAPIRequest,
+  authenticateAccountJWT,
+};

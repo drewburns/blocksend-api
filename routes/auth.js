@@ -4,6 +4,7 @@ const passport = require("passport");
 const router = express.Router();
 require("../config/passport")(passport);
 const User = require("../models").User;
+const Account = require("../models").Account;
 const Transfer = require("../models").Transfer;
 const { generateRandomCode } = require("../utils/random");
 
@@ -97,6 +98,7 @@ router.post("/code", async function (req, res) {
     res.json({ userId: doesUserExist.id });
   }
 });
+
 router.post("/login", async function (req, res) {
   const { userId, verifyCode } = req.body;
 
@@ -115,6 +117,49 @@ router.post("/login", async function (req, res) {
       );
       await doesUserExist.update({ verifyCode: null });
       res.json({ token, user: doesUserExist });
+    } else {
+      res.status(403).json("Wrong login");
+    }
+  } else {
+    res.status(403).json("Wrong login");
+  }
+});
+
+// admin
+router.post("/admin/code", async function (req, res) {
+  const { email } = req.body;
+
+  const newCode = generateRandomCode(6);
+  const doesAccountExist = await Account.findOne({ where: { email } });
+  if (!doesAccountExist) {
+    return res.status(500).json("WRONG");
+  }
+  await doesAccountExist.update({ verifyCode: newCode });
+  await sendEmail(doesAccountExist.email, newCode);
+  res.json({ accountId: doesAccountExist.id });
+});
+
+// admin
+router.post("/admin/login", async function (req, res) {
+  const { accountId, verifyCode } = req.body;
+
+  console.log("loggin in: ", accountId, verifyCode);
+  const doesAccountExist = await Account.findOne({
+    where: {
+      id: accountId,
+    },
+  });
+
+  if (doesAccountExist) {
+    if (doesAccountExist.verifyCode === verifyCode) {
+      var token = jwt.sign(
+        JSON.parse(JSON.stringify(doesAccountExist)),
+        process.env.JWT_KEY,
+        { expiresIn: 60 * 60 * 4 }
+      );
+      await doesAccountExist.update({ verifyCode: null });
+      doesAccountExist.dataValues.secretKey = "";
+      res.json({ token, account: doesAccountExist });
     } else {
       res.status(403).json("Wrong login");
     }
