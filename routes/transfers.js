@@ -298,10 +298,10 @@ router.post("/claim/", authenticateJWT, async function (req, res, next) {
 
   const dollarAmount = (amount / 100).toFixed(2);
   const subject = `${account.companyName} just sent you $${dollarAmount} on BlockSend`;
-  const body = `${dollarAmount} just paid you $${dollarAmount}. Log in to pick the coins you want! https://sandbox.blocksend.co/redeem/${newTransfer.link}`;
+  const body = `${dollarAmount} just paid you $${dollarAmount}. Log in to pick the coins you want! https://app.blocksend.co/redeem/${newTransfer.link}`;
   await sendEmail(req.user.email, null, subject, body);
   account.update({ balance: acc.balance - amount });
-  newTransfer.dataValues.link = `https://sandbox.blocksend.co/redeem/${newTransfer.link}`;
+  newTransfer.dataValues.link = `https://app.blocksend.co/redeem/${newTransfer.link}`;
 
   res.json(newTransfer);
 });
