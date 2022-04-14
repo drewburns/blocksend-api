@@ -89,7 +89,7 @@ router.post("/create", authenticateAccountJWT, async function (req, res, next) {
 
   const usdAmount = (amount / 100).toFixed(2);
   const subject = `${req.account.companyName} just sent you $${usdAmount} on BlockSend`;
-  const body = `${req.account.companyName} just sent you $${usdAmount}. Log in to pick the coins you want! https://blocksend.co/redeem/${newTransfer.link}`;
+  const body = `${req.account.companyName} just sent you $${usdAmount}. Log in to pick the coins you want! https://app.blocksend.co/redeem/${newTransfer.link}`;
   await sendEmail(doesUserExist.email, null, subject, body);
 
   await acc.update({ balance: acc.balance - amount });
