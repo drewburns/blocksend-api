@@ -61,7 +61,9 @@ const sendEmail = async (email, code) => {
   await sgMail.send(msg);
 };
 router.post("/code", async function (req, res) {
-  const { email, transferId } = req.body;
+  var { email, transferId } = req.body;
+
+  email = email.toLowerCase()
 
   var doesUserExist = null;
   if (!email && transferId) {
@@ -127,7 +129,8 @@ router.post("/login", async function (req, res) {
 
 // admin
 router.post("/admin/code", async function (req, res) {
-  const { email } = req.body;
+  var { email } = req.body;
+  email = email.toLowerCase()
 
   const newCode = generateRandomCode(6);
   const doesAccountExist = await Account.findOne({ where: { email } });

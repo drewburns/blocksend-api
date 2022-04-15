@@ -66,7 +66,8 @@ router.post("/auth", async function (req, res, next) {
 // upsert a user based on email/external ID and
 router.post("/user", authenticateAPIRequest, async function (req, res, next) {
   console.log("upserting user");
-  const { email, userName } = req.body;
+  var { email, userName } = req.body;
+  email = email.toLowerCase()
   if (!email) {
     res.status(400).json("Need email");
     return;
