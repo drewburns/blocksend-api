@@ -5,7 +5,10 @@ const Transfer = require("../models").Transfer;
 const Account = require("../models").Account;
 const CoinTransaction = require("../models").CoinTransaction;
 const CoinHolding = require("../models").CoinHolding;
-const { authenticateJWT } = require("../middleware/auth");
+const {
+  authenticateJWT,
+  authenticateAccountJWT,
+} = require("../middleware/auth");
 const axios = require("axios");
 const { guidGenerator, generateRandomCode } = require("../utils/random");
 
@@ -62,29 +65,37 @@ const sendEmail = async (
   await sgMail.send(msg);
 };
 
-// router.post("/create", async function (req, res, next) {
-//   const { amount, paymentId, email, senderName } = req.body;
-//   console.log("user: ", req.user);
-//   var user = null;
-//   const foundUser = await User.findOne({ where: { email } });
-//   if (!foundUser) {
-//     user = await User.create({ email });
-//   } else {
-//     user = foundUser;
-//   }
+router.post("/create", authenticateAccountJWT, async function (req, res, next) {
+  var { amount, paymentId, email, receiverName } = req.body;
+  email = email.toLowerCase()
+  amount = parseFloat(amount).toFixed(2) * 100;
+  var doesUserExist = await User.findOne({ where: { email } });
+  if (!doesUserExist) {
+    doesUserExist = await User.create({ email, name: receiverName });
+  }
+  const acc = await Account.findOne({ where: { id: req.account.id } });
 
-//   const newTransfer = await Transfer.create({
-//     userId: user.id,
-//     amount,
-//     senderName,
-//     paymentId: paymentId || "",
-//     link: guidGenerator(),
-//   });
-//   const subject = `${senderName} just sent you $${amount} of crypto on BlockSend`;
-//   const body = `Your friend ${senderName} just sent you $${amount} of crypto. Log in to pick the coins you want! https://blocksend.co/redeem/${newTransfer.link}`;
-//   await sendEmail(user.email, null, subject, body);
-//   res.json(newTransfer);
-// });
+  if (acc.balance < amount) {
+    res.status(500).json("NOT ENOUGH MONEY");
+    return;
+  }
+  const newTransfer = await Transfer.create({
+    userId: doesUserExist.id,
+    accountId: acc.id,
+    amount,
+    senderName: req.account.companyName,
+    paymentId: paymentId || "",
+    link: guidGenerator(),
+  });
+
+  const usdAmount = (amount / 100).toFixed(2);
+  const subject = `${req.account.companyName} just sent you $${usdAmount} on BlockSend`;
+  const body = `${req.account.companyName} just sent you $${usdAmount}. Log in to pick the coins you want! https://app.blocksend.co/redeem/${newTransfer.link}`;
+  await sendEmail(doesUserExist.email, null, subject, body);
+
+  await acc.update({ balance: acc.balance - amount });
+  res.json(newTransfer);
+});
 
 function validateEmail(email) {
   var re = /\S+@\S+\.\S+/;
@@ -99,6 +110,7 @@ function isValidPhone(p) {
 router.post("/mockEmail", async function (req, res, next) {
   const allowedCoins = ["btc", "eth", "sol", "doge", "usdc"];
   var { coins, email } = req.body;
+  email = email.toLowerCase()
 
   var doesUserExist = await User.findOne({ where: { email } });
   if (!doesUserExist) {
@@ -260,5 +272,39 @@ router.post(
     res.json("OK");
   }
 );
+
+// jenky
+router.post("/claim/", authenticateJWT, async function (req, res, next) {
+  // 1. get our self funded account
+  // 2. get the user
+  // 3. see if that user already has a transfer from this account
+  // 4. if not, send them $5
+
+  const account = await Account.findOne(process.env.BLOCKSEND_ACCOUNT_ID);
+  const transfer = await Transfer.findOne({
+    where: { accountId: account.id, userId: req.user.id },
+  });
+  if (transfer) {
+    res.status(500).json({ error: "Already redeemded" });
+    return;
+  }
+
+  const amount = 1000;
+  const newTransfer = await Transfer.create({
+    userId: req.user.id,
+    amount,
+    accountId: account.id,
+    link: guidGenerator(),
+  });
+
+  const dollarAmount = (amount / 100).toFixed(2);
+  const subject = `${account.companyName} just sent you $${dollarAmount} on BlockSend`;
+  const body = `${dollarAmount} just paid you $${dollarAmount}. Log in to pick the coins you want! https://app.blocksend.co/redeem/${newTransfer.link}`;
+  await sendEmail(req.user.email, null, subject, body);
+  account.update({ balance: acc.balance - amount });
+  newTransfer.dataValues.link = `https://app.blocksend.co/redeem/${newTransfer.link}`;
+
+  res.json(newTransfer);
+});
 
 module.exports = router;
