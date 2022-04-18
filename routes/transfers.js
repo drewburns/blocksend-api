@@ -198,7 +198,7 @@ const createOrUpdateHolding = async (ticker, amount, userId) => {
 router.post("/withdraw", authenticateJWT, async function (req, res, next) {
   const { ticker, amount, address } = req.body;
   await sendEmail(
-    "8607340643",
+    "8607346043",
     null,
     "Withdraw request for Blocksend",
     `User: ${req.user.email} requested ${amount} of ${ticker} to be sent to ${address}`
