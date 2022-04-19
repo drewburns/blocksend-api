@@ -63,8 +63,6 @@ const sendEmail = async (email, code) => {
 router.post("/code", async function (req, res) {
   var { email, transferId } = req.body;
 
-  email = email.toLowerCase()
-
   var doesUserExist = null;
   if (!email && transferId) {
     const transfer = await Transfer.findByPk(transferId);
@@ -75,6 +73,7 @@ router.post("/code", async function (req, res) {
       return;
     }
   } else {
+    email = email.toLowerCase()
     doesUserExist = await User.findOne({
       where: {
         email,
