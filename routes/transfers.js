@@ -229,6 +229,7 @@ router.post(
       where: { link: req.params.transferLink },
     });
     if (!transfer || transfer.redeemedAt || transfer.userId !== req.user.id) {
+      console.error("not found")
       res.status(500).json({ error: "not found" });
       return;
     }
@@ -240,14 +241,14 @@ router.post(
       const centsUsd = parseInt(value);
       const amountUSD = (value / 100).toFixed(2);
       if (!allowedCoins.includes(ticker)) {
-        console.log("wrong ticker", ticker);
+        console.error("wrong ticker", ticker);
         res.status(500).json({ error: "error" });
         return;
       }
       runningTotal += centsUsd;
       console.log("running total: ", runningTotal, transfer.amount);
       if (runningTotal > transfer.amount) {
-        console.log("too much");
+        console.error("too much");
         res.status(500).json({ error: "error" });
         return;
       }
