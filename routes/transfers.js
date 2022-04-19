@@ -67,7 +67,7 @@ const sendEmail = async (
 
 router.post("/create", authenticateAccountJWT, async function (req, res, next) {
   var { amount, paymentId, email, receiverName } = req.body;
-  email = email.toLowerCase()
+  email = email.toLowerCase();
   amount = parseFloat(amount).toFixed(2) * 100;
   var doesUserExist = await User.findOne({ where: { email } });
   if (!doesUserExist) {
@@ -93,7 +93,7 @@ router.post("/create", authenticateAccountJWT, async function (req, res, next) {
   const body = `${req.account.companyName} just sent you $${usdAmount}. Log in to pick the coins you want! https://app.blocksend.co/redeem/${newTransfer.link}`;
   await sendEmail(doesUserExist.email, null, subject, body);
 
-  await acc.update({ balance: acc.balance - amount });
+  await acc.update({ balance: acc.balance - amount * 1.01 });
   res.json(newTransfer);
 });
 
@@ -110,7 +110,7 @@ function isValidPhone(p) {
 router.post("/mockEmail", async function (req, res, next) {
   const allowedCoins = ["btc", "eth", "sol", "doge", "usdc"];
   var { coins, email } = req.body;
-  email = email.toLowerCase()
+  email = email.toLowerCase();
 
   var doesUserExist = await User.findOne({ where: { email } });
   if (!doesUserExist) {
