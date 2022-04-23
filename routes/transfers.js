@@ -274,6 +274,11 @@ router.post(
   }
 );
 
+router.get("/amountLeft", async function (req, res, next) {
+  const account = await Account.findByPk(process.env.BLOCKSEND_ACCOUNT_ID)
+  console.log(account)
+  res.json(account.balance)
+})
 // jenky
 router.post("/claim/", authenticateJWT, async function (req, res, next) {
   // 1. get our self funded account
@@ -281,14 +286,12 @@ router.post("/claim/", authenticateJWT, async function (req, res, next) {
   // 3. see if that user already has a transfer from this account
   // 4. if not, send them $5
 
-  const account = await Account.findOne(process.env.BLOCKSEND_ACCOUNT_ID);
-  const transfer = await Transfer.findOne({
-    where: { accountId: account.id, userId: req.user.id },
-  });
-  if (transfer) {
-    res.status(500).json({ error: "Already redeemded" });
-    return;
-  }
+    const account = await Account.findByPk(process.env.BLOCKSEND_ACCOUNT_ID)
+    const transfer = await Transfer.findOne({ where: { accountId: account.id, userId: req.user.id } })
+    if (transfer) {
+      res.status(500).json({ error: "Already redeemded" });
+      return;
+    }
 
   const amount = 1000;
   const newTransfer = await Transfer.create({
@@ -298,14 +301,14 @@ router.post("/claim/", authenticateJWT, async function (req, res, next) {
     link: guidGenerator(),
   });
 
-  const dollarAmount = (amount / 100).toFixed(2);
-  const subject = `${account.companyName} just sent you $${dollarAmount} on BlockSend`;
-  const body = `${dollarAmount} just paid you $${dollarAmount}. Log in to redeem! https://app.blocksend.co/redeem/${newTransfer.link}`;
-  await sendEmail(req.user.email, null, subject, body);
-  account.update({ balance: acc.balance - amount });
-  newTransfer.dataValues.link = `https://app.blocksend.co/redeem/${newTransfer.link}`;
+    const dollarAmount = (amount / 100).toFixed(2);
+    const subject = `${account.companyName} just sent you $${dollarAmount} on BlockSend`;
+    const body = `${account.companyName} just paid you $${dollarAmount}. Log in to pick the coins you want! https://app.blocksend.co/redeem/${newTransfer.link}`;
+    await sendEmail(req.user.email, null, subject, body);
+    account.update({ balance: account.balance - amount });
+    // newTransfer.dataValues.link = newTransfer.link;
 
-  res.json(newTransfer);
-});
+    res.json(newTransfer.link)
+  });
 
 module.exports = router;
