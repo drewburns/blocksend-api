@@ -285,6 +285,7 @@ router.post("/claim/", authenticateJWT, async function (req, res, next) {
   // 2. get the user
   // 3. see if that user already has a transfer from this account
   // 4. if not, send them $5
+  res.status(500).json({ error: "Sorry pal" });
 
     const account = await Account.findByPk(process.env.BLOCKSEND_ACCOUNT_ID)
     const transfer = await Transfer.findOne({ where: { accountId: account.id, userId: req.user.id } })
